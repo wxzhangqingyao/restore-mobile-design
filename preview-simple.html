@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restore mobile design (2) - 预览</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=PingFang+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'pingfang': ['PingFang SC', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'PingFang SC', sans-serif;
+      background-color: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script>
+    const { useState, useEffect, useRef } = React;
+    
+    // 日期与信心指数数据映射
+    const confidenceData = {
+      "2月18日": 52,
+      "2月19日": 77,
+      "2月20日": 94,
+    };
+    
+    // 权力地图人员态度数据
+    const powerMapData = {
+      "2月18日": {
+        liMei: { attitude: "积极", ml: 28, mt: 177 },
+        wangGong: { attitude: "抵触", ml: 219, mt: 212 },
+        xuGong: { attitude: "中立", ml: 0, mt: 0 },
+        zhaoGong: { attitude: "积极", ml: 207, mt: 15 }
+      },
+      "2月19日": {
+        liMei: { attitude: "中立", ml: 10, mt: 190 },
+        wangGong: { attitude: "中立", ml: 190, mt: 190 },
+        xuGong: { attitude: "积极", ml: 15, mt: 15 },
+        zhaoGong: { attitude: "积极", ml: 190, mt: 30 }
+      },
+      "2月20日": {
+        liMei: { attitude: "积极", ml: 35, mt: 165 },
+        wangGong: { attitude: "积极", ml: 175, mt: 175 },
+        xuGong: { attitude: "中立", ml: 0, mt: 20 },
+        zhaoGong: { attitude: "积极", ml: 180, mt: 25 }
+      }
+    };
+    
+    // 数字滚动动画组件
+    function AnimatedNumber({ value, className }) {
+      const [displayValue, setDisplayValue] = useState(value);
+      const prevValueRef = useRef(value);
+
+      useEffect(() => {
+        const prevValue = prevValueRef.current;
+        if (prevValue === value) return;
+
+        const duration = 800; // 滚动持续时间
+        const startTime = Date.now();
+        const diff = value - prevValue;
+
+        const animate = () => {
+          const now = Date.now();
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          
+          // 使用缓动函数
+          const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+          const currentValue = Math.round(prevValue + diff * easeOutCubic);
+          
+          setDisplayValue(currentValue);
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            prevValueRef.current = value;
+          }
+        };
+
+        requestAnimationFrame(animate);
+      }, [value]);
+
+      return React.createElement('span', { className }, displayValue);
+    }
+    
+    // 时间导航组件
+    function TimeNavigation({ selectedDate, setSelectedDate }) {
+      const dates = ["2月18日", "2月19日", "2月20日"];
+
+      return React.createElement('div', {
+        className: "bg-white content-stretch flex items-center justify-between p-[2px] absolute bottom-[16px] left-1/2 -translate-x-1/2 rounded-[999px] shrink-0 w-[358px] z-50",
+        "data-name": "时间轴"
+      }, [
+        React.createElement('div', {
+          key: "shadow",
+          "aria-hidden": "true",
+          className: "absolute border border-solid border-white inset-0 pointer-events-none rounded-[999px] shadow-[0px_4px_16px_0px_rgba(100,103,122,0.12)]"
+        }),
+        ...dates.map((date) => React.createElement('button', {
+          key: date,
+          onClick: () => setSelectedDate(date),
+          className: `content-stretch flex h-[49px] items-center justify-center px-[24px] py-[10px] relative rounded-[999px] shrink-0 cursor-pointer z-10 ${
+            selectedDate === date ? "bg-[#fe780f] text-white" : "text-[#2a2b33]"
+          }`
+        }, React.createElement('p', {
+          className: "font-['PingFang_SC',sans-serif] font-medium leading-[22px] not-italic relative shrink-0 text-[14px] whitespace-nowrap"
+        }, date)))
+      ]);
+    }
+    
+    // 主内容组件
+    function MainContent({ confidence, powerMap }) {
+      return React.createElement('div', {
+        className: "bg-white relative w-full min-h-full",
+        "data-name": "视图0226"
+      }, [
+        React.createElement('div', {
+          key: "background",
+          className: "absolute h-[515px] left-0 top-0 w-[390px]"
+        }, React.createElement('div', {
+          className: "absolute contents left-0 top-0",
+          "data-name": "背景图"
+        }, React.createElement('div', {
+          className: "absolute blur-[50px] h-[774px] left-[-46px] mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[46px_234px] mask-size-[390px_515px] top-[-234px] w-[436px]",
+          "data-name": "image 174",
+          style: { 
+            backgroundColor: '#f8f8f8',
+            opacity: 0.8
+          }
+        }))),
+        React.createElement('div', {
+          key: "title",
+          className: "absolute content-stretch flex flex-col gap-[4px] items-center left-[99px] top-[20px] w-[192px]"
+        }, [
+          React.createElement('p', {
+            key: "project-title",
+            className: "font-['PingFang_SC:Semibold',sans-serif] leading-[32px] not-italic relative shrink-0 text-[#2a2b33] text-[24px] w-full whitespace-pre-wrap"
+          }, "政企智慧运营项目"),
+          React.createElement('div', {
+            key: "project-phase",
+            className: "content-stretch flex gap-[8px] items-center relative shrink-0 w-full"
+          }, [
+            React.createElement('div', {
+              key: "target-icon",
+              className: "relative shrink-0 size-[24px]",
+              "data-name": "Target  3D Icon 1"
+            }, React.createElement('div', {
+              className: "w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center"
+            }, React.createElement('div', {
+              className: "w-4 h-4 bg-white rounded-full"
+            }))),
+            React.createElement('p', {
+              key: "phase-text",
+              className: "font-['PingFang_SC:Medium',sans-serif] leading-[0] not-italic relative shrink-0 text-[#2a2b33] text-[0px] text-[14px]"
+            }, [
+              React.createElement('span', {
+                key: "phase-label",
+                className: "font-['PingFang_SC:Regular',sans-serif] leading-[22px]"
+              }, "项目阶段："),
+              React.createElement('span', {
+                key: "phase-value",
+                className: "leading-[22px]"
+              }, "商务博弈阶段")
+            ])
+          ])
+        ]),
+        React.createElement('div', {
+          key: "main-content",
+          className: "-translate-x-1/2 absolute content-stretch flex flex-col gap-[16px] items-start left-1/2 top-[99.86px] pb-[81px] w-[358px]"
+        }, [
+          React.createElement('div', {
+            key: "card-1",
+            className: "bg-white relative rounded-[16px] shrink-0 w-full"
+          }, [
+            React.createElement('div', {
+              key: "card-1-shadow",
+              "aria-hidden": "true",
+              className: "absolute border-0 border-[#ebebf0] border-solid inset-0 pointer-events-none rounded-[16px] shadow-[0px_4px_16px_0px_rgba(100,103,122,0.12)]"
+            }),
+            React.createElement('div', {
+              key: "card-1-content",
+              className: "content-stretch flex flex-col gap-[24px] items-start px-[16px] py-[20px] relative w-full"
+            }, [
+              React.createElement('div', {
+                key: "card-1-title",
+                className: "mb-[4px] bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-lg w-full text-center"
+              }, React.createElement('h3', {
+                className: "text-white font-medium"
+              }, "项目分析")),
+              React.createElement('div', {
+                key: "card-1-body",
+                className: "content-stretch flex flex-col gap-[19px] items-center relative shrink-0 w-full"
+              }, [
+                React.createElement('div', {
+                  key: "confidence-chart",
+                  className: "grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0",
+                  "data-name": "主图形"
+                }, [
+                  React.createElement('div', {
+                    key: "chart-container",
+                    className: "col-1 ml-[80.77px] mt-[69.59px] relative row-1 size-[102px]"
+                  }, [
+                    React.createElement('div', {
+                      key: "chart-circle",
+                      className: "col-1 grid-cols-[max-content] grid-rows-[max-content] inline-grid ml-[72.77px] mt-[61.59px] place-items-start relative row-1",
+                      "data-name": "环形图"
+                    }, [
+                      React.createElement('div', {
+                        key: "chart-circle-bg",
+                        className: "col-1 ml-0 mt-0 relative row-1 size-[118px]",
+                        "data-name": "Ellipse 隐藏"
+                      }, React.createElement('div', {
+                        className: "absolute inset-[-4.24%]"
+                      }, React.createElement('svg', {
+                        className: "block size-full",
+                        fill: "none",
+                        preserveAspectRatio: "none",
+                        viewBox: "0 0 128 128"
+                      }, React.createElement('circle', {
+                        cx: "64",
+                        cy: "64",
+                        fill: "white",
+                        id: "Ellipse éè",
+                        r: "59",
+                        stroke: "#FFEFE1",
+                        strokeWidth: "10"
+                      })))),
+                      React.createElement('div', {
+                        key: "chart-circle-progress",
+                        className: "col-1 h-[118px] ml-[0px] mt-0 relative row-1 w-[118px]"
+                      }, React.createElement('div', {
+                        className: "absolute inset-[-6.78%]"
+                      }, React.createElement('svg', {
+                        className: "block size-full",
+                        fill: "none",
+                        preserveAspectRatio: "none",
+                        viewBox: "0 0 128 128",
+                        style: { transform: 'rotate(-90deg)' }
+                      }, [
+                        React.createElement('g', {
+                          key: "progress-circle",
+                          filter: "url(#filter0_d_1_2155_circle)",
+                          id: "Ellipse_284_progress"
+                        }, [
+                          // 红色圆环 - 当信心指数 < 60 时显示
+                          confidence < 60 && React.createElement('circle', {
+                            key: "red-circle",
+                            cx: "64",
+                            cy: "64",
+                            r: "54",
+                            stroke: "#F23030",
+                            strokeWidth: "10",
+                            fill: "none",
+                            strokeLinecap: "round",
+                            strokeDasharray: 2 * Math.PI * 54,
+                            strokeDashoffset: 2 * Math.PI * 54 * (1 - confidence / 100)
+                          }),
+                          // 橙色渐变圆环 - 当信心指数 60-79 时显示
+                          confidence >= 60 && confidence < 80 && React.createElement('circle', {
+                            key: "orange-circle",
+                            cx: "64",
+                            cy: "64",
+                            r: "54",
+                            stroke: "#FE780F",
+                            strokeWidth: "10",
+                            fill: "none",
+                            strokeLinecap: "round",
+                            strokeDasharray: 2 * Math.PI * 54,
+                            strokeDashoffset: 2 * Math.PI * 54 * (1 - confidence / 100)
+                          }),
+                          // 绿色圆环 - 当信心指数 >= 80 时显示
+                          confidence >= 80 && React.createElement('circle', {
+                            key: "green-circle",
+                            cx: "64",
+                            cy: "64",
+                            r: "54",
+                            stroke: "#02B342",
+                            strokeWidth: "10",
+                            fill: "none",
+                            strokeLinecap: "round",
+                            strokeDasharray: 2 * Math.PI * 54,
+                            strokeDashoffset: 2 * Math.PI * 54 * (1 - confidence / 100)
+                          })
+                        ])
+                      ]))),
+                      React.createElement('div', {
+                        key: "chart-circle-center",
+                        className: "col-1 ml-[36px] mt-[27px] relative row-1 content-stretch flex flex-col items-center"
+                      }, [
+                        React.createElement('div', {
+                          key: "confidence-value",
+                          className: `font-['Bebas_Neue:Regular',sans-serif] leading-[0] not-italic relative shrink-0 text-[0px] text-center tracking-[-1.44px] w-full whitespace-pre-wrap ${
+                            confidence < 60 ? "text-[#F23030]" : confidence < 80 ? "text-[#fe780f]" : "text-[#02B342]"
+                          }`
+                        }, [
+                          React.createElement(AnimatedNumber, {
+                            key: "animated-value",
+                            value: confidence,
+                            className: "leading-[normal] text-[40px]"
+                          }),
+                          React.createElement('span', {
+                            key: "space",
+                            className: "leading-[normal] text-[36px]"
+                          }, " "),
+                          React.createElement('span', {
+                            key: "percent",
+                            className: "leading-[normal] text-[20px] tracking-[-0.8px]"
+                          }, "%")
+                        ]),
+                        React.createElement('p', {
+                          key: "confidence-label",
+                          className: "col-1 font-['Alimama_ShuHeiTi:Bold',sans-serif] leading-[18px] ml-[38px] mt-[69px] not-italic relative row-1 text-[#2A2B33] text-[11px] text-center"
+                        }, "信心指数")
+                      ])
+                    ])
+                  ])
+                ]),
+                React.createElement('div', {
+                  key: "confidence-meta",
+                  className: "content-stretch flex flex-col gap-[16px] items-center relative shrink-0 w-full"
+                }, [
+                  React.createElement('div', {
+                    key: "confidence-change",
+                    className: "content-stretch flex flex-col gap-[16px] items-center relative shrink-0 w-[159px]"
+                  }, [
+                    React.createElement('div', {
+                      key: "change-indicator",
+                      className: "content-stretch flex gap-[8px] items-center relative shrink-0",
+                      "data-name": "指标"
+                    }, [
+                      React.createElement('div', {
+                        key: "change-text",
+                        className: "content-stretch flex gap-[4px] items-center relative shrink-0"
+                      }, [
+                        React.createElement('div', {
+                          key: "change-label",
+                          className: "flex flex-col font-['PingFang_SC:Regular',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#fe780f] text-[0px] w-[50px]"
+                        }, React.createElement('p', {
+                          className: "text-[14px] whitespace-pre-wrap"
+                        }, [
+                          React.createElement('span', {
+                            key: "space",
+                            className: "leading-[22px]"
+                          }, " "),
+                          React.createElement('span', {
+                            key: "label",
+                            className: "leading-[22px] text-[#9092a3]"
+                          }, "较上周")
+                        ])),
+                        React.createElement('div', {
+                          key: "change-value",
+                          className: "content-stretch flex items-center relative shrink-0"
+                        }, [
+                          React.createElement('div', {
+                            key: "arrow-icon",
+                            className: "w-5 h-5 text-orange-500 flex items-center justify-center"
+                          }, React.createElement('svg', {
+                            xmlns: "http://www.w3.org/2000/svg",
+                            fill: "none",
+                            viewBox: "0 0 24 24",
+                            stroke: "currentColor",
+                            className: "w-5 h-5"
+                          }, React.createElement('path', {
+                            strokeLinecap: "round",
+                            strokeLinejoin: "round",
+                            strokeWidth: 2,
+                            d: "M19 14l-7 7m0 0l-7-7m7 7V3"
+                          }))),
+                          React.createElement('div', {
+                            key: "value-text",
+                            className: "flex flex-col font-['PingFang_SC:Medium',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#fe780f] text-[15px] whitespace-nowrap"
+                          }, React.createElement('p', {
+                            className: "leading-[24px]"
+                          }, "+12%"))
+                        ])
+                      ]),
+                      React.createElement('div', {
+                        key: "trend-icon",
+                        className: "relative shrink-0 size-[15.75px]",
+                        "data-name": "Vector"
+                      }, React.createElement('div', {
+                        className: "absolute inset-[0_-25.4%_-50.79%_-25.4%]"
+                      }, React.createElement('div', {
+                        className: "w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center"
+                      }, React.createElement('div', {
+                        className: "w-3 h-3 bg-white rounded-full"
+                      }))))
+                    ]),
+                    React.createElement('div', {
+                      key: "confidence-legend",
+                      className: "content-stretch flex items-center justify-between relative shrink-0 w-full",
+                      "data-name": "图例"
+                    }, [
+                      React.createElement('div', {
+                        key: "legend-clear",
+                        className: "content-stretch flex gap-[4px] items-center relative shrink-0"
+                      }, [
+                        React.createElement('div', {
+                          key: "legend-clear-icon",
+                          className: "w-3 h-3 bg-orange-500 rounded-full"
+                        }),
+                        React.createElement('p', {
+                          key: "legend-clear-text",
+                          className: "font-['PingFang_SC:Regular',sans-serif] leading-[20px] not-italic relative shrink-0 text-[#2a2b33] text-[13px] text-center"
+                        }, "明确")
+                      ]),
+                      React.createElement('div', {
+                        key: "legend-blur",
+                        className: "content-stretch flex gap-[4px] items-center relative shrink-0"
+                      }, [
+                        React.createElement('div', {
+                          key: "legend-blur-icon",
+                          className: "w-3 h-3 bg-orange-200 rounded-full"
+                        }),
+                        React.createElement('p', {
+                          key: "legend-blur-text",
+                          className: "font-['PingFang_SC:Regular',sans-serif] leading-[20px] not-italic relative shrink-0 text-[#2a2b33] text-[13px] text-center"
+                        }, "模糊")
+                      ]),
+                      React.createElement('div', {
+                        key: "legend-missing",
+                        className: "content-stretch flex gap-[4px] items-center relative shrink-0"
+                      }, [
+                        React.createElement('div', {
+                          key: "legend-missing-icon",
+                          className: "w-3 h-3 border border-gray-300 rounded-full"
+                        }),
+                        React.createElement('p', {
+                          key: "legend-missing-text",
+                          className: "font-['PingFang_SC:Regular',sans-serif] leading-[20px] not-italic relative shrink-0 text-[#2a2b33] text-[13px] text-center"
+                        }, "缺失")
+                      ])
+                    ])
+                  ]),
+                  React.createElement('div', {
+                    key: "confidence-details",
+                    className: "content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full"
+                  }, [
+                    React.createElement('div', {
+                      key: "details-header",
+                      className: "content-stretch flex items-center justify-between relative shrink-0 w-full"
+                    }, [
+                      React.createElement('div', {
+                        key: "details-title",
+                        className: "flex flex-col font-['PingFang_SC:Regular',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#64677a] text-[13px] whitespace-nowrap"
+                      }, React.createElement('p', {
+                        className: "leading-[20px]"
+                      }, "已明确信息")),
+                      React.createElement('div', {
+                        key: "details-toggle",
+                        className: "content-stretch flex items-center relative shrink-0"
+                      }, [
+                        React.createElement('div', {
+                          key: "toggle-icon",
+                          className: "relative shrink-0 size-[14px]",
+                          "data-name": "Frame"
+                        }, React.createElement('svg', {
+                          className: "absolute block size-full",
+                          fill: "none",
+                          preserveAspectRatio: "none",
+                          viewBox: "0 0 14 14"
+                        }, React.createElement('g', {
+                          id: "Frame"
+                        }, React.createElement('path', {
+                          d: "M3.5 5.25L7 8.75L10.5 5.25",
+                          id: "Vector",
+                          stroke: "#9092A3",
+                          strokeLinecap: "round",
+                          strokeLinejoin: "round"
+                        })))),
+                        React.createElement('div', {
+                          key: "toggle-text",
+                          className: "flex flex-col font-['PingFang_SC:Regular',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#9092a3] text-[12px] whitespace-nowrap"
+                        }, React.createElement('p', {
+                          className: "leading-[18px]"
+                        }, "展开"))
+                      ])
+                    ]),
+                    React.createElement('div', {
+                      key: "details-content",
+                      className: "content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full"
+                    }, [
+                      React.createElement('div', {
+                        key: "detail-item-1",
+                        className: "bg-[#f7f8fa] content-stretch flex flex-col gap-[16px] items-center justify-center px-[16px] py-[12px] relative rounded-[8px] shrink-0 w-[326px]"
+                      }, [
+                        React.createElement('div', {
+                          key: "detail-item-1-border",
+                          "aria-hidden": "true",
+                          className: "absolute border-[#fe780f] border-l-2 border-solid inset-0 pointer-events-none rounded-[8px]"
+                        }),
+                        React.createElement('div', {
+                          key: "detail-item-1-content",
+                          className: "content-stretch flex flex-col items-start leading-[0] not-italic relative shrink-0 text-[14px] w-full"
+                        }, [
+                          React.createElement('div', {
+                            key: "detail-item-1-title",
+                            className: "flex flex-col font-['PingFang_SC:Semibold',sans-serif] justify-center min-w-full relative shrink-0 text-[#2a2b33] w-[min-content]"
+                          }, React.createElement('p', {
+                            className: "leading-[26px] whitespace-pre-wrap"
+                          }, "B 预算")),
+                          React.createElement('div', {
+                            key: "detail-item-1-text",
+                            className: "flex flex-col font-['PingFang_SC:Regular',sans-serif] justify-center relative shrink-0 text-[#414352] whitespace-nowrap"
+                          }, React.createElement('p', {
+                            className: "leading-[26px]"
+                          }, "财务总监明确表达由数字化专款拨付，上限50万"))
+                        ])
+                      ]),
+                      React.createElement('div', {
+                        key: "detail-item-2",
+                        className: "bg-[#f7f8fa] content-stretch flex flex-col gap-[16px] items-center justify-center px-[16px] py-[12px] relative rounded-[8px] shrink-0 w-[326px]"
+                      }, [
+                        React.createElement('div', {
+                          key: "detail-item-2-border",
+                          "aria-hidden": "true",
+                          className: "absolute border-[#fe780f] border-l-2 border-solid inset-0 pointer-events-none rounded-[8px]"
+                        }),
+                        React.createElement('div', {
+                          key: "detail-item-2-content",
+                          className: "content-stretch flex flex-col items-start leading-[0] not-italic relative shrink-0 text-[14px] w-full"
+                        }, [
+                          React.createElement('div', {
+                            key: "detail-item-2-title",
+                            className: "flex flex-col font-['PingFang_SC:Semibold',sans-serif] justify-center min-w-full relative shrink-0 text-[#2a2b33] text-[14px] w-[min-content]"
+                          }, React.createElement('p', {
+                            className: "leading-[26px] whitespace-pre-wrap"
+                          }, "N 需求")),
+                          React.createElement('div', {
+                            key: "detail-item-2-text",
+                            className: "flex flex-col font-['PingFang_SC:Regular',sans-serif] justify-center min-w-full relative shrink-0 text-[#414352] text-[14px] w-[min-content]"
+                          }, React.createElement('p', {
+                            className: "leading-[26px] whitespace-pre-wrap"
+                          }, "CEO全权负责本项目，技术负责人是XX.."))
+                        ])
+                      ])
+                    ])
+                  ])
+                ])
+              ])
+            ])
+          ]),
+          React.createElement('div', {
+            key: "card-2",
+            className: "bg-white relative rounded-[16px] shrink-0 w-full"
+          }, [
+            React.createElement('div', {
+              key: "card-2-shadow",
+              "aria-hidden": "true",
+              className: "absolute border-0 border-[#ebebf0] border-solid inset-0 pointer-events-none rounded-[16px] shadow-[0px_4px_16px_0px_rgba(100,103,122,0.12)]"
+            }),
+            React.createElement('div', {
+              key: "card-2-content",
+              className: "content-stretch flex flex-col gap-[16px] items-start px-[16px] py-[20px] relative w-full",
+              "data-name": "2"
+            }, [
+              React.createElement('div', {
+                key: "card-2-header",
+                className: "content-stretch flex items-center justify-between relative shrink-0 w-full"
+              }, [
+                React.createElement('p', {
+                  key: "card-2-title",
+                  className: "font-['PingFang_SC:Semibold',sans-serif] leading-[22px] not-italic relative shrink-0 text-[#2a2b33] text-[16px] text-center"
+                }, "成交信心走向"),
+                React.createElement('div', {
+                  key: "card-2-trend",
+                  className: "content-stretch flex items-center relative shrink-0"
+                }, [
+                  React.createElement('div', {
+                    key: "trend-icon",
+                    className: "w-5 h-5 text-orange-500 flex items-center justify-center mr-2"
+                  }, React.createElement('svg', {
+                    xmlns: "http://www.w3.org/2000/svg",
+                    fill: "none",
+                    viewBox: "0 0 24 24",
+                    stroke: "currentColor",
+                    className: "w-5 h-5"
+                  }, React.createElement('path', {
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    strokeWidth: 2,
+                    d: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  }))),
+                  React.createElement('div', {
+                    key: "trend-text",
+                    className: "flex flex-col font-['PingFang_SC:Regular',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#fe780f] text-[15px] whitespace-nowrap"
+                  }, React.createElement('p', {
+                    className: "leading-[24px]"
+                  }, "上升"))
+                ])
+              ]),
+              React.createElement('div', {
+                key: "card-2-meta",
+                className: "content-stretch flex items-center justify-between leading-[0] relative shrink-0 w-full"
+              }, [
+                React.createElement('div', {
+                  key: "card-2-period",
+                  className: "flex flex-col font-['PingFang_SC:Regular',sans-serif] justify-center not-italic relative shrink-0 text-[#9092a3] text-[13px] whitespace-nowrap"
+                }, React.createElement('p', {
+                  className: "leading-[20px]"
+                }, "周期：2026.02.18 - 2026.02.20")),
+                React.createElement('div', {
+                  key: "card-2-visits",
+                  className: "grid-cols-[max-content] grid-rows-[max-content] inline-grid place-items-start relative shrink-0"
+                }, React.createElement('div', {
+                  className: "col-1 content-stretch flex gap-[2px] items-center ml-0 mt-0 not-italic relative row-1 text-center whitespace-nowrap"
+                }, [
+                  React.createElement('div', {
+                    key: "visits-label",
+                    className: "flex flex-col font-['PingFang_SC:Regular',sans-serif] justify-center relative shrink-0 text-[#9092a3] text-[13px]"
+                  }, React.createElement('p', {
+                    className: "leading-[20px]"
+                  }, "累计拜访：")),
+                  React.createElement('div', {
+                    key: "visits-value",
+                    className: "flex flex-col font-['Bebas_Neue:Regular',sans-serif] justify-center relative shrink-0 text-[#2a2b33] text-[20px] tracking-[1px] uppercase"
+                  }, React.createElement('p', {
+                    className: "leading-[normal]"
+                  }, "3")),
+                  React.createElement('div', {
+                    key: "visits-unit",
+                    className: "flex flex-col font-['PingFang_SC:Regular',sans-serif] justify-center relative shrink-0 text-[#9092a3] text-[13px]"
+                  }, React.createElement('p', {
+                    className: "leading-[20px]"
+                  }, "次"))
+                ]))
+              ]),
+              React.createElement('div', {
+                key: "card-2-chart",
+                className: "content-stretch flex items-start pt-[12px] relative shrink-0 w-full"
+              }, React.createElement('div', {
+                className: "content-stretch flex flex-[1_0_0] flex-col h-[200px] items-start min-h-px min-w-px relative",
+                "data-name": "坐标系"
+              }, [
+                React.createElement('div', {
+                  key: "chart-placeholder",
+                  className: "w-full h-full bg-gray-100 rounded-lg flex items-center justify-center"
+                }, React.createElement('p', {
+                  className: "text-gray-500"
+                }, "趋势图表"))
+              ]))
+            ])
+          ])
+        ])
+      ]);
+    }
+    
+    // 头部组件
+    function Header() {
+      return React.createElement('div', {
+        className: "content-stretch flex flex-col items-center relative size-full"
+      }, [
+        React.createElement('div', {
+          key: "header-fixed",
+          className: "bg-white content-stretch flex flex-col items-start shrink-0 fixed top-0 w-[390px] z-50",
+          "data-name": "头部"
+        }, [
+          React.createElement('div', {
+            key: "status-bar",
+            className: "h-[52px] overflow-clip relative shrink-0 w-full"
+          }, React.createElement('div', {
+            className: "absolute left-0 top-0 w-[390px]",
+            "data-name": "Status bar - iPhone"
+          }, React.createElement('div', {
+            className: "flex flex-row items-center justify-center size-full"
+          }, React.createElement('div', {
+            className: "content-stretch flex gap-[154px] items-center justify-center pb-[14px] pt-[16px] px-[24px] relative w-full"
+          }, [
+            React.createElement('div', {
+              key: "time",
+              className: "content-stretch flex flex-[1_0_0] h-[22px] items-center justify-center min-h-px min-w-px pt-[1.5px] relative",
+              "data-name": "Time"
+            }, React.createElement('p', {
+              className: "font-['SF_Pro:Semibold',sans-serif] font-[590] leading-[22px] relative shrink-0 text-[17px] text-black text-center"
+            }, "9:41")),
+            React.createElement('div', {
+              key: "levels",
+              className: "flex-[1_0_0] h-[22px] min-h-px min-w-px relative",
+              "data-name": "Levels"
+            }, React.createElement('div', {
+              className: "flex flex-row items-center justify-center size-full"
+            }, React.createElement('div', {
+              className: "content-stretch flex gap-[7px] items-center justify-center pr-px pt-px relative size-full"
+            }, [
+              React.createElement('div', {
+                key: "cellular",
+                className: "h-[12.226px] relative shrink-0 w-[19.2px]",
+                "data-name": "Cellular Connection"
+              }, React.createElement('div', {
+                className: "w-5 h-3 bg-black"
+              })),
+              React.createElement('div', {
+                key: "wifi",
+                className: "h-[12.328px] relative shrink-0 w-[17.142px]",
+                "data-name": "Wifi"
+              }, React.createElement('div', {
+                className: "w-4 h-3 bg-black"
+              })),
+              React.createElement('div', {
+                key: "battery",
+                className: "h-[13px] relative shrink-0 w-[27.328px]",
+                "data-name": "Frame"
+              }, React.createElement('div', {
+                className: "w-7 h-3 bg-black"
+              }))
+            ]))) 
+          ]))),
+          React.createElement('div', {
+            key: "title-bar",
+            className: "relative shrink-0 w-[390px]",
+            "data-name": "标题栏"
+          }, React.createElement('div', {
+            className: "flex flex-row items-center size-full"
+          }, React.createElement('div', {
+            className: "content-stretch flex items-center justify-between px-[16px] py-[4px] relative w-full"
+          }, [
+            React.createElement('button', {
+              key: "back-button",
+              className: "bg-white content-stretch cursor-pointer flex gap-[4px] items-center pl-[8px] pr-[12px] py-[8px] relative rounded-[99px] shrink-0 w-[36px]",
+              "data-name": "返回"
+            }, React.createElement('div', {
+              className: "relative shrink-0 size-[20px]"
+            }, React.createElement('svg', {
+              className: "absolute block size-full",
+              fill: "none",
+              preserveAspectRatio: "none",
+              viewBox: "0 0 20 20"
+            }, React.createElement('g', {
+              id: "arrow-left"
+            }, React.createElement('path', {
+              d: "M10 15L5 10L10 5",
+              id: "Vector",
+              stroke: "#414352",
+              strokeLinecap: "round",
+              strokeLinejoin: "round",
+              strokeMiterlimit: "10",
+              strokeWidth: "2"
+            }))))),
+            React.createElement('div', {
+              key: "right-buttons",
+              className: "content-stretch flex gap-[12px] items-center relative shrink-0",
+              "data-name": "右侧"
+            }, [
+              React.createElement('div', {
+                key: "assistant",
+                className: "relative shrink-0 size-[36px]",
+                "data-name": "助手"
+              }, React.createElement('div', {
+                className: "absolute left-0 size-[36px] top-0",
+                "data-name": "logo"
+              }, [
+                React.createElement('div', {
+                  key: "logo-bg",
+                  className: "-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[36px] top-1/2"
+                }, React.createElement('svg', {
+                  className: "absolute block size-full",
+                  fill: "none",
+                  preserveAspectRatio: "none",
+                  viewBox: "0 0 36 36"
+                }, React.createElement('circle', {
+                  cx: "18",
+                  cy: "18",
+                  fill: "white",
+                  id: "Ellipse 182",
+                  r: "18"
+                }))),
+                React.createElement('div', {
+                  key: "logo-avatar",
+                  className: "-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[36px] top-1/2",
+                  "data-name": "jimeng-2025-11-04-9584-角色参考图1，站姿参考图2，嘴巴笑起来 (1) 1"
+                }, React.createElement('div', {
+                  className: "absolute inset-0 overflow-hidden pointer-events-none"
+                }, React.createElement('div', {
+                  className: "w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold"
+                }, "智"))),
+                React.createElement('div', {
+                  key: "logo-label",
+                  className: "-translate-x-1/2 absolute bg-gradient-to-b content-stretch flex from-[#fe780f] items-center justify-center left-1/2 px-[4px] py-[2px] rounded-[99px] to-[#ff6b4f] top-[22px]"
+                }, React.createElement('p', {
+                  className: "font-['PingFang_SC:Regular',sans-serif] leading-[10px] not-italic relative shrink-0 text-[8px] text-center text-white"
+                }, "问小智"))
+              ])),
+              React.createElement('div', {
+                key: "search",
+                className: "bg-white content-stretch flex items-center justify-center p-[8px] relative rounded-[99px] shrink-0 w-[36px]",
+                "data-name": "搜索"
+              }, React.createElement('div', {
+                className: "relative shrink-0 size-[20px]",
+                "data-name": "分享"
+              }, React.createElement('div', {
+                className: "w-5 h-5 text-gray-600 flex items-center justify-center"
+              }, React.createElement('svg', {
+                xmlns: "http://www.w3.org/2000/svg",
+                fill: "none",
+                viewBox: "0 0 24 24",
+                stroke: "currentColor",
+                className: "w-5 h-5"
+              }, React.createElement('path', {
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
+                strokeWidth: 2,
+                d: "M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+              }))))),
+              React.createElement('div', {
+                key: "more",
+                className: "bg-white content-stretch flex items-center justify-center p-[8px] relative rounded-[99px] shrink-0 w-[36px]",
+                "data-name": "搜索"
+              }, React.createElement('div', {
+                className: "relative shrink-0 size-[20px]",
+                "data-name": "更多"
+              }, React.createElement('div', {
+                className: "w-5 h-5 text-gray-600 flex items-center justify-center"
+              }, React.createElement('svg', {
+                xmlns: "http://www.w3.org/2000/svg",
+                fill: "none",
+                viewBox: "0 0 24 24",
+                stroke: "currentColor",
+                className: "w-5 h-5"
+              }, React.createElement('path', {
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
+                strokeWidth: 2,
+                d: "M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+              }))))) 
+            ])
+          ]))),
+          React.createElement('div', {
+            key: "project-info",
+            className: "h-[88px] relative shrink-0 w-full mt-[96px]",
+            "data-name": "项目信息"
+          }, React.createElement('div', {
+            className: "content-stretch flex flex-col gap-[16px] items-start p-[16px] relative size-full"
+          }, React.createElement('div', {
+            className: "content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full"
+          }, [
+            React.createElement('div', {
+              key: "project-name",
+              className: "content-stretch flex flex-col items-start relative shrink-0 w-full"
+            }, React.createElement('div', {
+              className: "flex flex-col font-['PingFang_SC:Semibold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#2a2b33] text-[22px] w-full"
+            }, React.createElement('p', {
+              className: "leading-[28px] whitespace-pre-wrap"
+            }, "AI生财之道讨论会"))),
+            React.createElement('div', {
+              key: "project-meta",
+              className: "content-stretch flex gap-[12px] items-center relative shrink-0 w-full"
+            }, [
+              React.createElement('div', {
+                key: "meta-date",
+                className: "content-stretch flex gap-[4px] items-center relative shrink-0"
+              }, [
+                React.createElement('div', {
+                  key: "date-icon",
+                  className: "relative shrink-0 size-[16px]",
+                  "data-name": "vuesax/outline/calendar"
+                }, React.createElement('div', {
+                  className: "w-4 h-4 text-gray-400 flex items-center justify-center"
+                }, React.createElement('svg', {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  fill: "none",
+                  viewBox: "0 0 24 24",
+                  stroke: "currentColor",
+                  className: "w-4 h-4"
+                }, React.createElement('path', {
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round",
+                  strokeWidth: 2,
+                  d: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                }))))
+                ,
+                React.createElement('p', {
+                  key: "date-text",
+                  className: "font-['PingFang_SC:Regular',sans-serif] leading-[20px] not-italic relative shrink-0 text-[#64677a] text-[12px]"
+                }, "2025-08-11"),
+                React.createElement('p', {
+                  key: "time-text",
+                  className: "font-['PingFang_SC:Regular',sans-serif] leading-[20px] not-italic relative shrink-0 text-[#64677a] text-[12px]"
+                }, "24:45")
+              ]),
+              React.createElement('div', {
+                key: "meta-tag",
+                className: "content-stretch flex gap-[4px] h-[20px] items-center justify-center relative rounded-[4px] shrink-0",
+                "data-name": "类型标签-录音"
+              }, [
+                React.createElement('div', {
+                  key: "tag-icon",
+                  className: "w-4 h-4 text-teal-500 flex items-center justify-center"
+                }, React.createElement('svg', {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  fill: "none",
+                  viewBox: "0 0 24 24",
+                  stroke: "currentColor",
+                  className: "w-4 h-4"
+                }, React.createElement('path', {
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round",
+                  strokeWidth: 2,
+                  d: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                }))),
+                React.createElement('p', {
+                  key: "tag-text",
+                  className: "font-['PingFang_SC:Regular',sans-serif] leading-[20px] not-italic relative shrink-0 text-[#5fc2b2] text-[12px]"
+                }, "综合分析")
+              ])
+            ])
+          ]))),
+          React.createElement('div', {
+            key: "tabs",
+            className: "content-stretch flex gap-[8px] h-[36px] items-start relative shrink-0 w-[358px]",
+            "data-name": "切换"
+          }, [
+            React.createElement('div', {
+              key: "tab-1",
+              className: "bg-[#f7f8fa] flex-[1_0_0] min-h-px min-w-px relative rounded-[999px]"
+            }, React.createElement('div', {
+              className: "content-stretch flex gap-[4px] items-start p-[2px] relative w-full"
+            }, [
+              React.createElement('div', {
+                key: "tab-1-1",
+                className: "flex-[1_0_0] min-h-px min-w-px relative rounded-[99px]"
+              }, React.createElement('div', {
+                className: "flex flex-row items-center justify-center size-full"
+              }, React.createElement('div', {
+                className: "content-stretch flex items-center justify-center px-[16px] py-[4px] relative w-full"
+              }, React.createElement('p', {
+                className: "font-['PingFang_SC:Regular',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#414352] text-[15px]"
+              }, "AI 总结")))),
+              React.createElement('div', {
+                key: "tab-1-2",
+                className: "flex-[1_0_0] min-h-px min-w-px relative rounded-[99px] bg-white shadow-[0px_1px_4px_0px_rgba(100,103,122,0.06)]"
+              }, React.createElement('div', {
+                className: "flex flex-row items-center justify-center size-full"
+              }, React.createElement('div', {
+                className: "content-stretch flex items-center justify-center px-[16px] py-[4px] relative w-full"
+              }, React.createElement('p', {
+                className: "font-['PingFang_SC:Medium',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#fe780f] text-[15px]"
+              }, "分析看板"))))
+            ])),
+            React.createElement('div', {
+              key: "tab-2",
+              className: "bg-[#f7f8fa] content-stretch flex items-start p-[2px] relative rounded-[999px] shrink-0 w-[116px]"
+            }, React.createElement('div', {
+              className: "flex-[1_0_0] min-h-px min-w-px relative rounded-[99px]"
+            }, React.createElement('div', {
+              className: "flex flex-row items-center justify-center size-full"
+            }, React.createElement('div', {
+              className: "content-stretch flex items-center justify-center px-[16px] py-[4px] relative w-full"
+            }, React.createElement('p', {
+              className: "font-['PingFang_SC:Regular',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#414352] text-[15px]"
+            }, "参考笔记"))))
+          ])
+        ])
+      ]);
+    }
+    
+    // 主应用组件
+    function App() {
+      const [selectedDate, setSelectedDate] = useState("2月18日");
+      const currentPowerMap = powerMapData[selectedDate];
+
+      return React.createElement('div', {
+        className: "flex items-center justify-center min-h-screen bg-[#f5f5f5]"
+      }, [
+        // Mobile container with fixed iPhone 13/14 dimensions
+        React.createElement('div', {
+          key: "mobile-container",
+          className: "relative w-[390px] h-[844px] bg-white shadow-2xl overflow-hidden"
+        }, [
+          // 头部组件
+          React.createElement(Header, {
+            key: "header"
+          }),
+          
+          // 可滚动内容区
+          React.createElement('div', {
+            key: "content",
+            className: "absolute inset-0 overflow-y-auto overflow-x-hidden pt-[216px]"
+          }, [
+            // 主内容区
+            React.createElement(MainContent, {
+              key: "main-content",
+              confidence: confidenceData[selectedDate],
+              powerMap: currentPowerMap
+            })
+          ]),
+          
+          // 底部时间导航 - 固定定位
+          React.createElement(TimeNavigation, {
+            key: "time-navigation",
+            selectedDate: selectedDate,
+            setSelectedDate: setSelectedDate
+          })
+        ])
+      ]);
+    }
+    
+    // 渲染应用
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>

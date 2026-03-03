@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restore mobile design (2) - 基础预览</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=PingFang+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'pingfang': ['PingFang SC', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'PingFang SC', sans-serif;
+      background-color: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script>
+    const { useState } = React;
+    
+    // 主应用组件
+    function App() {
+      const [selectedDate, setSelectedDate] = useState("2月18日");
+      
+      return React.createElement('div', {
+        className: "flex items-center justify-center min-h-screen bg-[#f5f5f5]"
+      }, [
+        // Mobile container with fixed iPhone 13/14 dimensions
+        React.createElement('div', {
+          key: "mobile-container",
+          className: "relative w-[390px] h-[844px] bg-white shadow-2xl overflow-hidden"
+        }, [
+          // 简单头部
+          React.createElement('div', {
+            key: "header",
+            className: "bg-white p-4 border-b border-gray-200"
+          }, React.createElement('h1', {
+            className: "text-xl font-semibold text-center"
+          }, "政企智慧运营项目")),
+          
+          // 可滚动内容区
+          React.createElement('div', {
+            key: "content",
+            className: "p-4"
+          }, [
+            React.createElement('div', {
+              key: "card",
+              className: "bg-white p-4 rounded-lg shadow-md mb-4"
+            }, [
+              React.createElement('h2', {
+                key: "card-title",
+                className: "text-lg font-medium mb-2"
+              }, "项目分析"),
+              React.createElement('p', {
+                key: "card-content",
+                className: "text-gray-600"
+              }, "这是一个测试页面，用于验证React是否正常工作。")
+            ])
+          ]),
+          
+          // 底部时间导航
+          React.createElement('div', {
+            key: "time-navigation",
+            className: "fixed bottom-4 left-0 right-0 flex justify-center"
+          }, React.createElement('div', {
+            className: "bg-white p-2 rounded-full shadow-md flex"
+          }, [
+            React.createElement('button', {
+              key: "date1",
+              onClick: () => setSelectedDate("2月18日"),
+              className: `px-4 py-2 mx-1 rounded-full ${selectedDate === "2月18日" ? "bg-orange-500 text-white" : "bg-gray-100"}`
+            }, "2月18日"),
+            React.createElement('button', {
+              key: "date2",
+              onClick: () => setSelectedDate("2月19日"),
+              className: `px-4 py-2 mx-1 rounded-full ${selectedDate === "2月19日" ? "bg-orange-500 text-white" : "bg-gray-100"}`
+            }, "2月19日"),
+            React.createElement('button', {
+              key: "date3",
+              onClick: () => setSelectedDate("2月20日"),
+              className: `px-4 py-2 mx-1 rounded-full ${selectedDate === "2月20日" ? "bg-orange-500 text-white" : "bg-gray-100"}`
+            }, "2月20日")
+          ]))
+        ])
+      ]);
+    }
+    
+    // 渲染应用
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>

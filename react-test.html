@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React测试页面</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script>
+    const { useState } = React;
+    
+    function App() {
+      const [count, setCount] = useState(0);
+      
+      return React.createElement('div', {
+        className: 'min-h-screen flex flex-col items-center justify-center bg-gray-100'
+      }, [
+        React.createElement('h1', {
+          key: 'title',
+          className: 'text-2xl font-bold text-gray-800'
+        }, 'React测试页面'),
+        React.createElement('p', {
+          key: 'count',
+          className: 'mt-4 text-xl text-gray-600'
+        }, `计数: ${count}`),
+        React.createElement('button', {
+          key: 'button',
+          onClick: () => setCount(count + 1),
+          className: 'mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600'
+        }, '增加计数')
+      ]);
+    }
+    
+    // 渲染应用
+    ReactDOM.render(React.createElement(App), document.getElementById('root'));
+  </script>
+</body>
+</html>

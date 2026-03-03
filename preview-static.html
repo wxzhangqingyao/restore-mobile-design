@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restore mobile design (2) - 静态预览</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=PingFang+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'pingfang': ['PingFang SC', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'PingFang SC', sans-serif;
+      background-color: #f5f5f5;
+    }
+    
+    /* 自定义样式 */
+    .status-bar {
+      height: 52px;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+    
+    .time {
+      font-weight: 600;
+      font-size: 17px;
+    }
+    
+    .levels {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    
+    .title-bar {
+      padding: 12px 16px;
+      background-color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .back-button {
+      width: 36px;
+      height: 36px;
+      border-radius: 99px;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .assistant {
+      position: relative;
+      width: 36px;
+      height: 36px;
+    }
+    
+    .assistant-label {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(to bottom, #fe780f, #ff6b4f);
+      color: white;
+      font-size: 8px;
+      padding: 2px 4px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+    
+    .project-info {
+      padding: 16px;
+      background-color: white;
+      margin-top: 96px;
+    }
+    
+    .project-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #2a2b33;
+      margin-bottom: 8px;
+    }
+    
+    .project-meta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .meta-date {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    
+    .meta-tag {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      background-color: #f7f8fa;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px;
+      margin-top: 16px;
+    }
+    
+    .tab-group {
+      flex: 1;
+      background-color: #f7f8fa;
+      border-radius: 999px;
+      padding: 2px;
+      display: flex;
+      gap: 4px;
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 4px 16px;
+      border-radius: 99px;
+      text-align: center;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    
+    .tab.active {
+      background-color: white;
+      box-shadow: 0px 1px 4px 0px rgba(100, 103, 122, 0.06);
+      color: #fe780f;
+      font-weight: 500;
+    }
+    
+    .main-content {
+      padding: 16px;
+      margin-top: 16px;
+    }
+    
+    .card {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0px 4px 16px 0px rgba(100, 103, 122, 0.12);
+      padding: 20px 16px;
+      margin-bottom: 16px;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2a2b33;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .confidence-chart {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 24px 0;
+    }
+    
+    .chart-container {
+      position: relative;
+      width: 118px;
+      height: 118px;
+    }
+    
+    .chart-circle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .chart-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    
+    .confidence-value {
+      font-size: 40px;
+      font-weight: bold;
+      color: #fe780f;
+    }
+    
+    .confidence-label {
+      font-size: 11px;
+      color: #2A2B33;
+      margin-top: 4px;
+    }
+    
+    .confidence-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .confidence-change {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .change-value {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #fe780f;
+    }
+    
+    .confidence-legend {
+      display: flex;
+      justify-content: space-between;
+      width: 159px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    .confidence-details {
+      width: 100%;
+    }
+    
+    .details-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .details-toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #9092a3;
+      font-size: 12px;
+    }
+    
+    .detail-item {
+      background-color: #f7f8fa;
+      border-left: 2px solid #fe780f;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    
+    .detail-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2a2b33;
+      margin-bottom: 4px;
+    }
+    
+    .detail-text {
+      font-size: 14px;
+      color: #414352;
+    }
+    
+    .trend-chart {
+      height: 200px;
+      background-color: #f7f8fa;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 12px;
+    }
+    
+    .time-navigation {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: white;
+      border-radius: 999px;
+      padding: 2px;
+      display: flex;
+      justify-content: space-between;
+      width: 358px;
+      box-shadow: 0px 4px 16px 0px rgba(100, 103, 122, 0.12);
+      z-index: 50;
+    }
+    
+    .nav-button {
+      flex: 1;
+      height: 49px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .nav-button.active {
+      background-color: #fe780f;
+      color: white;
+    }
+    
+    .nav-button span {
+      font-size: 14px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="flex items-center justify-center min-h-screen bg-[#f5f5f5]">
+    <!-- Mobile container with fixed iPhone 13/14 dimensions -->
+    <div class="relative w-[390px] h-[844px] bg-white shadow-2xl overflow-hidden">
+      <!-- 头部固定部分 -->
+      <div class="bg-white fixed top-0 w-[390px] z-50">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+          <div class="time">9:41</div>
+          <div class="levels">
+            <div class="w-5 h-3 bg-black"></div>
+            <div class="w-4 h-3 bg-black"></div>
+            <div class="w-7 h-3 bg-black"></div>
+          </div>
+        </div>
+        
+        <!-- 标题栏 -->
+        <div class="title-bar">
+          <div class="back-button">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 15L5 10L10 5" stroke="#414352" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="right-buttons">
+            <div class="assistant">
+              <div class="w-8 h-8 bg-white rounded-full border border-gray-200 flex items-center justify-center">
+                <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                  智
+                </div>
+              </div>
+              <div class="assistant-label">问小智</div>
+            </div>
+            <div class="w-9 h-9 bg-white rounded-full border border-gray-200 flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#414352" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="w-9 h-9 bg-white rounded-full border border-gray-200 flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" stroke="#414352" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16z" stroke="#414352" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 可滚动内容区 -->
+      <div class="absolute inset-0 overflow-y-auto overflow-x-hidden pt-[96px]">
+        <!-- 项目信息 -->
+        <div class="project-info">
+          <div class="project-title">AI生财之道讨论会</div>
+          <div class="project-meta">
+            <div class="meta-date">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 2V4M8 12V14M2 8H4M12 8H14M16 8V14C16 15.1046 15.1046 16 14 16H2C0.895431 16 0 15.1046 0 14V2C0 0.895431 0.895431 0 2 0H14C15.1046 0 16 0.895431 16 2V8Z" stroke="#B0B2BF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="text-[12px] text-[#64677a]">2025-08-11</span>
+              <span class="text-[12px] text-[#64677a]">24:45</span>
+            </div>
+            <div class="meta-tag">
+              <div class="w-4 h-4 bg-[#5fc2b2] rounded-full flex items-center justify-center">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M5 1L9 5L5 9L1 5L5 1Z" fill="white" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="text-[12px] text-[#5fc2b2]">综合分析</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 标签切换 -->
+        <div class="tabs">
+          <div class="tab-group">
+            <div class="tab">AI 总结</div>
+            <div class="tab active">分析看板</div>
+          </div>
+          <div class="tab-group" style="width: 116px;">
+            <div class="tab">参考笔记</div>
+          </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+          <!-- 第一个卡片 - 项目分析 -->
+          <div class="card">
+            <!-- 顶部标题 -->
+            <div class="mb-[4px] bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-lg w-full text-center">
+              <h3 class="text-white font-medium">项目分析</h3>
+            </div>
+            
+            <!-- 信心指数图表 -->
+            <div class="confidence-chart">
+              <div class="chart-container">
+                <!-- 背景圆环 -->
+                <svg class="chart-circle" viewBox="0 0 128 128">
+                  <circle cx="64" cy="64" r="59" fill="white" stroke="#FFEFE1" stroke-width="10"/>
+                </svg>
+                <!-- 进度圆环 -->
+                <svg class="chart-circle" viewBox="0 0 128 128" style="transform: rotate(-90deg);">
+                  <circle cx="64" cy="64" r="54" stroke="#FE780F" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="339.12" stroke-dashoffset="163.02"/>
+                </svg>
+                <!-- 中心内容 -->
+                <div class="chart-center">
+                  <div class="confidence-value">52%</div>
+                  <div class="confidence-label">信心指数</div>
+                </div>
+              </div>
+              
+              <!-- 信心指数元数据 -->
+              <div class="confidence-meta">
+                <div class="confidence-change">
+                  <div class="text-[14px] text-[#9092a3]">较上周</div>
+                  <div class="change-value">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M14 10L10 6L6 10" stroke="#FE780F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10 6V14" stroke="#FE780F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="font-medium">+12%</span>
+                  </div>
+                  <div class="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+                    <div class="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                </div>
+                
+                <!-- 图例 -->
+                <div class="confidence-legend">
+                  <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FE780F;"></div>
+                    <span class="text-[13px]">明确</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FFE4CF;"></div>
+                    <span class="text-[13px]">模糊</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="legend-color" style="background-color: white; border: 1px solid #EBEBF0;"></div>
+                    <span class="text-[13px]">缺失</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 已明确信息 -->
+              <div class="confidence-details">
+                <div class="details-header">
+                  <div class="text-[13px] text-[#64677a]">已明确信息</div>
+                  <div class="details-toggle">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#9092A3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>展开</span>
+                  </div>
+                </div>
+                
+                <div class="details-content">
+                  <div class="detail-item">
+                    <div class="detail-title">B 预算</div>
+                    <div class="detail-text">财务总监明确表达由数字化专款拨付，上限50万</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-title">N 需求</div>
+                    <div class="detail-text">CEO全权负责本项目，技术负责人是XX..</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 第二个卡片 - 成交信心走向 -->
+          <div class="card">
+            <div class="card-title">
+              <span>成交信心走向</span>
+              <div class="flex items-center gap-2 text-[#fe780f]">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M14 10L10 6L6 10" stroke="#FE780F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 6V14" stroke="#FE780F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>上升</span>
+              </div>
+            </div>
+            
+            <div class="flex justify-between items-center mb-4">
+              <div class="text-[13px] text-[#9092a3]">周期：2026.02.18 - 2026.02.20</div>
+              <div class="flex items-center gap-1">
+                <span class="text-[13px] text-[#9092a3]">累计拜访：</span>
+                <span class="text-[20px] font-bold text-[#2a2b33]">3</span>
+                <span class="text-[13px] text-[#9092a3]">次</span>
+              </div>
+            </div>
+            
+            <div class="trend-chart">
+              <p class="text-gray-500">趋势图表</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 底部时间导航 -->
+      <div class="time-navigation">
+        <div class="nav-button active">
+          <span>2月18日</span>
+        </div>
+        <div class="nav-button">
+          <span>2月19日</span>
+        </div>
+        <div class="nav-button">
+          <span>2月20日</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+/* Figma imported fonts */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
+
+/* YouSheBiaoTiHei font - using a similar bold display font as fallback */
+@font-face {
+  font-family: 'YouSheBiaoTiHei';
+  src: local('Noto Sans SC'), local('PingFang SC');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'YouSheBiaoTiHei:Regular';
+  src: local('Noto Sans SC'), local('PingFang SC');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* PingFang SC is a system font on macOS/iOS, but we provide a fallback */
+@font-face {
+  font-family: 'PingFang_SC';
+  src: local('PingFang SC'), local('Noto Sans SC'), local('sans-serif');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PingFang_SC:Medium';
+  src: local('PingFang SC Medium'), local('Noto Sans SC'), local('sans-serif');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PingFang_SC:Semibold';
+  src: local('PingFang SC Semibold'), local('Noto Sans SC'), local('sans-serif');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PingFang_SC:Regular';
+  src: local('PingFang SC Regular'), local('Noto Sans SC'), local('sans-serif');
+  font-weight: 400;
+  font-style: normal;
+}
